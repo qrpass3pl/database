@@ -17,7 +17,16 @@
             <div class="logo"><img src="database-icon.png" /></div>
             <h1>Command Center</h1>
           </div>
-          <div class="time-display" id="timeDisplay">14:32:45</div>
+          <div class="left-side">
+            <div class="time-display" id="timeDisplay">14:32:45</div>
+            <button type="button" id="logoutBtn" class="logout-btn">
+              Logout
+            </button>
+          </div>
+        </div>
+
+        <div class="success-message" id="successMessage">
+          Logout successful! Loading...
         </div>
 
         <!-- Stats Bar -->
@@ -177,6 +186,8 @@
     </div>
 
     <script>
+      const successMessage = document.getElementById("successMessage");
+
       // Update time display
       function updateTime() {
         const now = new Date();
@@ -189,6 +200,26 @@
 
       updateTime();
       setInterval(updateTime, 1000);
+
+      // Logout button functionality
+      document
+        .getElementById("logoutBtn")
+        .addEventListener("click", function () {
+          // Clear session/storage if needed
+          sessionStorage.clear();
+          localStorage.removeItem("authToken");
+
+          // Redirect to login page
+          setTimeout(() => {
+            successMessage.classList.add("show");
+            setTimeout(() => {
+              window.location.href = "index.html";
+            }, 1000);
+          }, 1000);
+
+          // Alternatively, if you want to show a message instead:
+          // alert("Logged out successfully!");
+        });
 
       // Add interactive card effects
       document.querySelectorAll(".card").forEach((card) => {
