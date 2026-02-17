@@ -70,7 +70,7 @@
     </div>
 
     <div class="signup-link">
-      Don't have an account? <a href="https://github.com/qrpass3pl/database/blob/7f76e354f326534c1df37a6ad79f73cb1f6c9a29/register.php">Sign up here</a>
+      Don't have an account? <a href="register.php">Sign up here</a>
     </div>
   </div>
 

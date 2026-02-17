@@ -104,7 +104,7 @@
     </div>
 
     <div class="login-link">
-      Already have an account? <a href="https://github.com/qrpass3pl/database/blob/04052280947d793275e1714a0857381a8e683f5e/index.html">Sign in here</a>
+      Already have an account? <a href="index.php">Sign in here</a>
     </div>
   </div>
 
