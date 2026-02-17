@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>Calculator</title>
+	<style>
+		:root{--bg:#0f1724;--panel:#111827;--accent:#06b6d4;--muted:#9ca3af;--glass:rgba(255,255,255,0.03)}
+		*{box-sizing:border-box}
+		html,body{height:100%}
+		body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#071021 0%, #071827 100%);display:flex;align-items:center;justify-content:center;padding:24px;color:#e6eef6}
+		.calculator{width:360px;max-width:100%;background:linear-gradient(180deg,var(--panel),#0b1220);border-radius:12px;box-shadow:0 10px 30px rgba(2,6,23,0.6);padding:18px}
+		.display{height:64px;background:var(--glass);border-radius:8px;padding:12px 14px;font-size:28px;display:flex;align-items:center;justify-content:flex-end;overflow:hidden;color:#fff;user-select:none}
+		.display.small{font-size:18px;color:var(--muted)}
+		.buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+		button{appearance:none;border:0;padding:16px;font-size:18px;border-radius:8px;background:rgba(255,255,255,0.03);color:inherit;cursor:pointer;transition:transform .05s linear}
+		button:active{transform:scale(.995)}
+		.btn.operator{background:linear-gradient(180deg,#0b3a45,#06323a);color:#dff9fb}
+		.btn.equals{grid-column:span 2;background:linear-gradient(180deg,var(--accent),#0891b2);color:#032027;font-weight:600}
+		.btn.clear{background:linear-gradient(180deg,#462b3a,#3b2130);color:#ffdede}
+		.btn.back{background:linear-gradient(180deg,#3b4150,#2b3140);color:var(--muted)}
+		@media (max-width:420px){.display{height:56px;font-size:22px;padding:10px}}
+	</style>
+</head>
+<body>
+	<div class="calculator" role="application" aria-label="Calculator">
+		<div id="subDisplay" class="display small" aria-hidden="true">&nbsp;</div>
+		<div id="display" class="display" role="status" aria-live="polite">0</div>
+		<div class="buttons">
+			<button class="btn clear" data-action="clear">C</button>
+			<button class="btn back" data-action="back">⌫</button>
+			<button class="btn operator" data-value="%">%</button>
+			<button class="btn operator" data-value="/">÷</button>
+
+			<button class="btn" data-value="7">7</button>
+			<button class="btn" data-value="8">8</button>
+			<button class="btn" data-value="9">9</button>
+			<button class="btn operator" data-value="*">×</button>
+
+			<button class="btn" data-value="4">4</button>
+			<button class="btn" data-value="5">5</button>
+			<button class="btn" data-value="6">6</button>
+			<button class="btn operator" data-value="-">−</button>
+
+			<button class="btn" data-value="1">1</button>
+			<button class="btn" data-value="2">2</button>
+			<button class="btn" data-value="3">3</button>
+			<button class="btn operator" data-value="+">+</button>
+
+			<button class="btn" data-value="0">0</button>
+			<button class="btn" data-value=".">.</button>
+			<button class="btn equals" data-action="equals">=</button>
+		</div>
+	</div>
+
+	<script>
+		const display = document.getElementById('display');
+		const subDisplay = document.getElementById('subDisplay');
+		let expr = '';
+
+		function update() {
+			display.textContent = expr === '' ? '0' : expr;
+			subDisplay.textContent = expr === '' ? '\u00A0' : expr;
+		}
+
+		function append(value){
+			if(expr === 'Error') expr = '';
+			expr += value;
+			update();
+		}
+
+		function clearAll(){ expr = ''; update(); }
+
+		function backspace(){
+			if(expr === 'Error') { expr = ''; update(); return }
+			expr = expr.slice(0,-1);
+			update();
+		}
+
+		function safeEvaluate(input){
+			if(!/^[0-9+\-*/().%\s]*$/.test(input)) return 'Error';
+			try{
+				const fn = Function('return ('+input+')');
+				const v = fn();
+				if(typeof v === 'number' && isFinite(v)) return String(v);
+				return 'Error';
+			}catch(e){return 'Error'}
+		}
+
+		function equals(){
+			if(expr.trim() === '') return;
+			const result = safeEvaluate(expr.replace(/÷/g,'/').replace(/×/g,'*'));
+			expr = result;
+			update();
+		}
+
+		document.querySelectorAll('.btn').forEach(btn=>{
+			btn.addEventListener('click', ()=>{
+				const val = btn.dataset.value;
+				const action = btn.dataset.action;
+				if(action === 'clear') return clearAll();
+				if(action === 'back') return backspace();
+				if(action === 'equals') return equals();
+				if(val) append(val);
+			});
+		});
+
+		window.addEventListener('keydown', (e)=>{
+			if(e.key === 'Enter' || e.key === '='){ e.preventDefault(); equals(); return }
+			if(e.key === 'Backspace'){ e.preventDefault(); backspace(); return }
+			if(e.key.toLowerCase() === 'c' && (e.ctrlKey || e.metaKey)) { clearAll(); return }
+			if(/^[0-9+\-*/().%]$/.test(e.key)) { append(e.key); return }
+			if(e.key === '.') { append('.'); return }
+		});
+
+		update();
+	</script>
+</body>
+</html>
