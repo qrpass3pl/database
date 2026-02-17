@@ -106,26 +106,6 @@ body::after {
   text-align: center;
 }
 
-.logo {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 16px;
-  background: linear-gradient(135deg, var(--accent) 0%, #c4c4c4 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: var(--primary);
-  font-size: 24px;
-  animation: scaleIn 0.6s ease-out 0.1s both;
-}
-
-.logo img {
-  width: 30px;
-  height: 30px;
-}
-
 @keyframes scaleIn {
   from {
     opacity: 0;
