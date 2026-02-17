@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Command Center Dashboard</title>
+    <link rel="icon" href="database-icon.png" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="portal.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <header>
+        <div class="header-top">
+          <div class="logo-section">
+            <div class="logo"><img src="database-icon.png" /></div>
+            <h1>Command Center</h1>
+          </div>
+          <div class="time-display" id="timeDisplay">14:32:45</div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+          <div class="stat-item">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value">2,847</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Revenue</div>
+            <div class="stat-value">$42.5K</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">System Load</div>
+            <div class="stat-value">68%</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Uptime</div>
+            <div class="stat-value">99.8%</div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Dashboard Grid -->
+      <div class="dashboard-grid">
+        <!-- Performance Card -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Performance</div>
+            </div>
+            <div class="card-icon">📊</div>
+          </div>
+          <div class="card-value">92%</div>
+          <div class="card-subtext">Overall system health</div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 92%"></div>
+          </div>
+        </div>
+
+        <!-- Active Connections Card -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Connections</div>
+            </div>
+            <div class="card-icon">🔗</div>
+          </div>
+          <div class="card-value">1,248</div>
+          <div class="card-subtext">
+            <span class="status-indicator status-online"></span>Active now
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 78%"></div>
+          </div>
+        </div>
+
+        <!-- Data Processing Card -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Data Processing</div>
+            </div>
+            <div class="card-icon">⚙️</div>
+          </div>
+          <div class="card-value">584 GB</div>
+          <div class="card-subtext">Processed this month</div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 61%"></div>
+          </div>
+        </div>
+
+        <!-- Error Rate Card -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Error Rate</div>
+            </div>
+            <div class="card-icon">⚠️</div>
+          </div>
+          <div class="card-value">0.2%</div>
+          <div class="card-subtext">
+            <span class="status-indicator status-online"></span>Within limits
+          </div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              style="width: 20%; background: var(--success)"
+            ></div>
+          </div>
+        </div>
+
+        <!-- API Usage Card -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">API Requests</div>
+            </div>
+            <div class="card-icon">🔌</div>
+          </div>
+          <div class="card-value">47.2K</div>
+          <div class="card-subtext">Today's requests</div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 85%"></div>
+          </div>
+        </div>
+
+        <!-- Security Status Card -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Security</div>
+            </div>
+            <div class="card-icon">🛡️</div>
+          </div>
+          <div class="card-value">Secure</div>
+          <div class="card-subtext">
+            <span class="status-indicator status-online"></span>All systems
+            green
+          </div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              style="width: 100%; background: var(--success)"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Activity Feed Card -->
+        <div class="card full-width-card">
+          <div class="card-header">
+            <div class="card-title">Recent Activity</div>
+            <button class="button button-secondary">View All</button>
+          </div>
+          <div class="activity-item">
+            <span>📥</span>
+            <span>New user registration: Sarah Mitchell</span>
+          </div>
+          <div class="activity-item">
+            <span>💰</span>
+            <span>Payment received: $1,250 from Enterprise Client</span>
+          </div>
+          <div class="activity-item">
+            <span>🔄</span>
+            <span>Database backup completed successfully</span>
+          </div>
+          <div class="activity-item">
+            <span>📈</span>
+            <span>Revenue milestone reached: $500K this quarter</span>
+          </div>
+          <div class="activity-item">
+            <span>🚀</span>
+            <span>New API v2.5 deployed to production</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Update time display
+      function updateTime() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        const seconds = String(now.getSeconds()).padStart(2, "0");
+        document.getElementById("timeDisplay").textContent =
+          `${hours}:${minutes}:${seconds}`;
+      }
+
+      updateTime();
+      setInterval(updateTime, 1000);
+
+      // Add interactive card effects
+      document.querySelectorAll(".card").forEach((card) => {
+        card.addEventListener("click", function () {
+          this.style.transform = "scale(0.98)";
+          setTimeout(() => {
+            this.style.transform = "";
+          }, 200);
+        });
+      });
+
+      // Animate progress bars on page load
+      window.addEventListener("load", () => {
+        document.querySelectorAll(".progress-fill").forEach((bar) => {
+          const width = bar.style.width;
+          bar.style.width = "0";
+          setTimeout(() => {
+            bar.style.width = width;
+          }, 100);
+        });
+      });
+    </script>
+  </body>
+</html>
