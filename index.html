@@ -146,11 +146,6 @@
         setTimeout(() => {
           successMessage.classList.add('show');
           setTimeout(() => {
-            alert('Login successful!\n\nEmail: ' + emailInput.value);
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Sign In';
-            form.reset();
-            successMessage.classList.remove('show');
             window.location.href = 'portal.html';
           }, 1500);
         }, 1000);
