@@ -1,5 +1,6 @@
 // maintable.js
 
+// CRITICAL: Check authentication before displaying content
 authManager.requireAuth();
 authManager.checkSession();
 
@@ -20,20 +21,14 @@ setInterval(updateTime, 1000);
 
 // Logout button functionality
 document.getElementById("logoutBtn").addEventListener("click", function () {
-  // Clear session/storage if needed
-  sessionStorage.clear();
-  localStorage.removeItem("authToken");
+  // Clear session/storage through auth manager
+  authManager.logout();
 
-  // Redirect to login page
+  // Show logout message
+  successMessage.classList.add("show");
   setTimeout(() => {
-    successMessage.classList.add("show");
-    setTimeout(() => {
-      window.location.href = "index.html";
-    }, 1000);
+    window.location.href = "index.html";
   }, 1000);
-
-  // Alternatively, if you want to show a message instead:
-  // alert("Logged out successfully!");
 });
 
 let tableData = [];

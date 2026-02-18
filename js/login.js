@@ -9,18 +9,19 @@ const passwordError = document.getElementById("passwordError");
 const successMessage = document.getElementById("successMessage");
 const submitBtn = document.getElementById("submitBtn");
 
-// If already logged in, redirect to portal
+// If already logged in, go straight to the portal
 if (authManager.isAuthenticated()) {
   window.location.href = "portal.html";
 }
 
-// Email validation
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
 function validateEmail(email) {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// Clear error on input
+// ── Live feedback ──────────────────────────────────────────────────────────────
+
 emailInput.addEventListener("input", () => {
   emailError.classList.remove("show");
   emailInput.classList.remove("error");
@@ -31,7 +32,8 @@ passwordInput.addEventListener("input", () => {
   passwordInput.classList.remove("error");
 });
 
-// Form submission
+// ── Form submission ────────────────────────────────────────────────────────────
+
 form.addEventListener("submit", (e) => {
   e.preventDefault();
 
@@ -43,7 +45,7 @@ form.addEventListener("submit", (e) => {
 
   let isValid = true;
 
-  // Validate email
+  // ── Client-side format checks ──────────────────────────────────────────────
   if (!emailInput.value.trim()) {
     emailError.textContent = "Email is required";
     emailError.classList.add("show");
@@ -56,38 +58,46 @@ form.addEventListener("submit", (e) => {
     isValid = false;
   }
 
-  // Validate password
   if (!passwordInput.value.trim()) {
     passwordError.textContent = "Password is required";
     passwordError.classList.add("show");
     passwordInput.classList.add("error");
     isValid = false;
-  } else if (passwordInput.value.length < 6) {
-    passwordError.textContent = "Password must be at least 6 characters";
-    passwordError.classList.add("show");
-    passwordInput.classList.add("error");
-    isValid = false;
   }
 
-  if (isValid) {
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Signing in...";
+  if (!isValid) return;
 
-    // Simulate API call
+  // ── Credential check ───────────────────────────────────────────────────────
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Signing in...";
+
+  // Simulate a short network delay
+  setTimeout(() => {
+    const result = authManager.login(emailInput.value.trim(), passwordInput.value);
+
+    if (!result.success) {
+      // Show a single generic error on the password field so we don't
+      // leak whether the email exists or not
+      passwordError.textContent = result.message; // "Invalid email or password."
+      passwordError.classList.add("show");
+      passwordInput.classList.add("error");
+      passwordInput.value = ""; // clear password field on failure
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Sign In";
+      return;
+    }
+
+    // ── Success ──────────────────────────────────────────────────────────────
+    authManager.setAuth(result.user, rememberInput.checked);
+    successMessage.classList.add("show");
+
     setTimeout(() => {
-      // Store authentication token and user data
-      const rememberMe = rememberInput.checked;
-      authManager.setAuth(emailInput.value, rememberMe);
-
-      successMessage.classList.add("show");
-      setTimeout(() => {
-        window.location.href = "portal.html";
-      }, 1000);
+      window.location.href = "portal.html";
     }, 1000);
-  }
+  }, 800);
 });
 
-// Social login buttons
+// ── Social login (placeholder) ────────────────────────────────────────────────
 document.querySelectorAll(".social-btn").forEach((btn) => {
   btn.addEventListener("click", (e) => {
     e.preventDefault();

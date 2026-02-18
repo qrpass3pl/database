@@ -18,44 +18,42 @@ const termsError = document.getElementById("termsError");
 const successMessage = document.getElementById("successMessage");
 const submitBtn = document.getElementById("submitBtn");
 
-// Email validation
-function validateEmail(email) {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
+// If already logged in, skip registration
+if (authManager.isAuthenticated()) {
+  window.location.href = "portal.html";
 }
 
-// Password strength calculator
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 function getPasswordStrength(password) {
   if (password.length < 8) return "weak";
-
   let strength = 0;
   if (/[a-z]/.test(password)) strength++;
   if (/[A-Z]/.test(password)) strength++;
   if (/[0-9]/.test(password)) strength++;
   if (/[^a-zA-Z0-9]/.test(password)) strength++;
-
   if (strength <= 1) return "weak";
   if (strength <= 2) return "fair";
   return "strong";
 }
 
-// Update password strength indicator
+// ── Live feedback ──────────────────────────────────────────────────────────────
+
 passwordInput.addEventListener("input", () => {
   if (passwordInput.value) {
     const strength = getPasswordStrength(passwordInput.value);
-    passwordStrength.classList.add("show");
     passwordStrength.className = `password-strength show ${strength}`;
   } else {
     passwordStrength.classList.remove("show");
   }
-
-  if (passwordError.classList.contains("show")) {
-    passwordError.classList.remove("show");
-    passwordInput.classList.remove("error");
-  }
+  passwordError.classList.remove("show");
+  passwordInput.classList.remove("error");
 });
 
-// Clear errors on input
 firstNameInput.addEventListener("input", () => {
   firstNameError.classList.remove("show");
   firstNameInput.classList.remove("error");
@@ -80,27 +78,19 @@ termsCheckbox.addEventListener("change", () => {
   termsError.classList.remove("show");
 });
 
-// Form submission
+// ── Form submission ────────────────────────────────────────────────────────────
+
 form.addEventListener("submit", (e) => {
   e.preventDefault();
 
-  // Reset errors
-  firstNameError.classList.remove("show");
-  lastNameError.classList.remove("show");
-  emailError.classList.remove("show");
-  passwordError.classList.remove("show");
-  confirmPasswordError.classList.remove("show");
-  termsError.classList.remove("show");
-
-  firstNameInput.classList.remove("error");
-  lastNameInput.classList.remove("error");
-  emailInput.classList.remove("error");
-  passwordInput.classList.remove("error");
-  confirmPasswordInput.classList.remove("error");
+  // Reset all error states
+  [firstNameError, lastNameError, emailError, passwordError, confirmPasswordError, termsError]
+    .forEach((el) => el.classList.remove("show"));
+  [firstNameInput, lastNameInput, emailInput, passwordInput, confirmPasswordInput]
+    .forEach((el) => el.classList.remove("error"));
 
   let isValid = true;
 
-  // Validate first name
   if (!firstNameInput.value.trim()) {
     firstNameError.textContent = "First name is required";
     firstNameError.classList.add("show");
@@ -108,7 +98,6 @@ form.addEventListener("submit", (e) => {
     isValid = false;
   }
 
-  // Validate last name
   if (!lastNameInput.value.trim()) {
     lastNameError.textContent = "Last name is required";
     lastNameError.classList.add("show");
@@ -116,7 +105,6 @@ form.addEventListener("submit", (e) => {
     isValid = false;
   }
 
-  // Validate email
   if (!emailInput.value.trim()) {
     emailError.textContent = "Email is required";
     emailError.classList.add("show");
@@ -129,7 +117,6 @@ form.addEventListener("submit", (e) => {
     isValid = false;
   }
 
-  // Validate password
   if (!passwordInput.value.trim()) {
     passwordError.textContent = "Password is required";
     passwordError.classList.add("show");
@@ -142,7 +129,6 @@ form.addEventListener("submit", (e) => {
     isValid = false;
   }
 
-  // Validate confirm password
   if (!confirmPasswordInput.value.trim()) {
     confirmPasswordError.textContent = "Please confirm your password";
     confirmPasswordError.classList.add("show");
@@ -155,43 +141,46 @@ form.addEventListener("submit", (e) => {
     isValid = false;
   }
 
-  // Validate terms
   if (!termsCheckbox.checked) {
     termsError.textContent = "You must agree to the terms and conditions";
     termsError.classList.add("show");
     isValid = false;
   }
 
-  if (isValid) {
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Creating Account...";
+  if (!isValid) return;
 
-    // Simulate API call
-    setTimeout(() => {
-      successMessage.classList.add("show");
-      setTimeout(() => {
-        alert(
-          "Account created successfully!\n\nName: " +
-            firstNameInput.value +
-            " " +
-            lastNameInput.value +
-            "\nEmail: " +
-            emailInput.value +
-            "\n\nRedirecting to login...",
-        );
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Create Account";
-        form.reset();
-        successMessage.classList.remove("show");
-        passwordStrength.classList.remove("show");
-        // In a real app, redirect to login page
-        // window.location.href = 'login.html';
-      }, 1500);
-    }, 1000);
+  // ── All client-side checks passed — attempt registration ──────────────────
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Creating Account...";
+
+  // Check for duplicate email BEFORE the fake delay so feedback is instant
+  const result = authManager.registerUser({
+    firstName: firstNameInput.value.trim(),
+    lastName: lastNameInput.value.trim(),
+    email: emailInput.value.trim(),
+    password: passwordInput.value,
+  });
+
+  if (!result.success) {
+    // Duplicate email — surface the error on the email field
+    emailError.textContent = result.message;
+    emailError.classList.add("show");
+    emailInput.classList.add("error");
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Create Account";
+    return;
   }
+
+  // Simulate network latency, then redirect
+  setTimeout(() => {
+    successMessage.classList.add("show");
+    setTimeout(() => {
+      window.location.href = "index.html"; // go to login page
+    }, 1500);
+  }, 1000);
 });
 
-// Social signup buttons
+// ── Social sign-up (placeholder) ─────────────────────────────────────────────
 document.querySelectorAll(".social-btn").forEach((btn) => {
   btn.addEventListener("click", (e) => {
     e.preventDefault();
