@@ -1,7 +1,7 @@
 // auth.js - Authentication Manager
 // Handles user registration storage and login validation
 
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+const SESSION_TIMEOUT_MS = 1 * 60 * 1000; // 30 minutes
 
 const authManager = {
   // ── Storage helpers ──────────────────────────────────────────────────────────
