@@ -216,7 +216,15 @@ button img {
   background: rgba(255, 59, 48, 0.3);
 }
 
-.success-message {
+#successMessage {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  transition: opacity 0.3s ease;
+}
+
+.message {
   display: none;
   padding: 12px;
   background: rgba(81, 207, 102, 0.1);
@@ -229,6 +237,6 @@ button img {
   margin-bottom: 20px;
 }
 
-.success-message.show {
+.message.show {
   display: block;
 }

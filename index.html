@@ -17,10 +17,6 @@
         <p>Sign in to your Employee Database</p>
       </div>
 
-      <div class="success-message" id="successMessage">
-        Login successful! Redirecting...
-      </div>
-
       <form class="form" id="loginForm">
         <div class="form-group">
           <label for="email">Email Address</label>
@@ -75,9 +71,13 @@
       </div>
     </div>
 
+    <div class="message" id="successMessage">
+      Login successful! Redirecting...
+    </div>
+
     <!-- Load authentication manager first -->
     <script src="js/auth.js"></script>
-    <script src="js/index.js"></script>
+    <script src="js/login.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
   </body>
 </html>
