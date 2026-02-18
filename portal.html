@@ -26,7 +26,7 @@
         </div>
 
         <div class="success-message" id="successMessage">
-          Logout successful! Loading...
+          Logout successful! Redirecting...
         </div>
 
         <!-- Stats Bar -->
@@ -185,7 +185,13 @@
       </div>
     </div>
 
+    <!-- Load authentication manager first -->
+    <script src="auth.js"></script>
+
     <script>
+      // CRITICAL: Check authentication before displaying content
+      authManager.requireAuth();
+
       const successMessage = document.getElementById("successMessage");
 
       // Update time display
@@ -205,20 +211,14 @@
       document
         .getElementById("logoutBtn")
         .addEventListener("click", function () {
-          // Clear session/storage if needed
-          sessionStorage.clear();
-          localStorage.removeItem("authToken");
+          // Clear session/storage through auth manager
+          authManager.logout();
 
-          // Redirect to login page
+          // Show logout message
+          successMessage.classList.add("show");
           setTimeout(() => {
-            successMessage.classList.add("show");
-            setTimeout(() => {
-              window.location.href = "index.html";
-            }, 1000);
+            window.location.href = "index.html";
           }, 1000);
-
-          // Alternatively, if you want to show a message instead:
-          // alert("Logged out successfully!");
         });
 
       // Add interactive card effects

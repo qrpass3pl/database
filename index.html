@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login</title>
+  <title>Login - Employee Database</title>
   <link rel="icon" href="database-icon.png">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="login-register.css">
@@ -74,14 +74,23 @@
     </div>
   </div>
 
+  <!-- Load authentication manager first -->
+  <script src="auth.js"></script>
+
   <script>
     const form = document.getElementById('loginForm');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
+    const rememberInput = document.getElementById('remember');
     const emailError = document.getElementById('emailError');
     const passwordError = document.getElementById('passwordError');
     const successMessage = document.getElementById('successMessage');
     const submitBtn = document.getElementById('submitBtn');
+
+    // If already logged in, redirect to portal
+    if (authManager.isAuthenticated()) {
+      window.location.href = 'portal.html';
+    }
 
     // Email validation
     function validateEmail(email) {
@@ -144,6 +153,10 @@
 
         // Simulate API call
         setTimeout(() => {
+          // Store authentication token and user data
+          const rememberMe = rememberInput.checked;
+          authManager.setAuth(emailInput.value, rememberMe);
+
           successMessage.classList.add('show');
           setTimeout(() => {
             window.location.href = 'portal.html';
@@ -160,7 +173,6 @@
       });
     });
   </script>
-  <script src="portal.js"></script>
 </body>
 
 </html>
