@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Command Center Dashboard</title>
-    <link rel="icon" href="database-icon.png" />
-    <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="portal.css" />
+    <link rel="icon" href="icon/database-icon.png" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/portal.css" />
   </head>
   <body>
     <div class="container">
@@ -14,7 +14,7 @@
       <header>
         <div class="header-top">
           <div class="logo-section">
-            <div class="logo"><img src="database-icon.png" /></div>
+            <div class="logo"><img src="icon/database-icon.png" /></div>
             <h1>Command Center</h1>
           </div>
           <div class="left-side">
@@ -159,7 +159,12 @@
         <div class="card full-width-card">
           <div class="card-header">
             <div class="card-title">Recent Activity</div>
-            <button class="button button-secondary" onclick="window.location.href='maintable.html'">View All</button>
+            <button
+              class="button button-secondary"
+              onclick="window.location.href = 'maintable.html'"
+            >
+              View All
+            </button>
           </div>
           <div class="activity-item">
             <span>📥</span>
@@ -186,61 +191,7 @@
     </div>
 
     <!-- Load authentication manager first -->
-    <script src="auth.js"></script>
-
-    <script>
-      // CRITICAL: Check authentication before displaying content
-      authManager.requireAuth();
-
-      const successMessage = document.getElementById("successMessage");
-
-      // Update time display
-      function updateTime() {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, "0");
-        const minutes = String(now.getMinutes()).padStart(2, "0");
-        const seconds = String(now.getSeconds()).padStart(2, "0");
-        document.getElementById("timeDisplay").textContent =
-          `${hours}:${minutes}:${seconds}`;
-      }
-
-      updateTime();
-      setInterval(updateTime, 1000);
-
-      // Logout button functionality
-      document
-        .getElementById("logoutBtn")
-        .addEventListener("click", function () {
-          // Clear session/storage through auth manager
-          authManager.logout();
-
-          // Show logout message
-          successMessage.classList.add("show");
-          setTimeout(() => {
-            window.location.href = "index.html";
-          }, 1000);
-        });
-
-      // Add interactive card effects
-      document.querySelectorAll(".card").forEach((card) => {
-        card.addEventListener("click", function () {
-          this.style.transform = "scale(0.98)";
-          setTimeout(() => {
-            this.style.transform = "";
-          }, 200);
-        });
-      });
-
-      // Animate progress bars on page load
-      window.addEventListener("load", () => {
-        document.querySelectorAll(".progress-fill").forEach((bar) => {
-          const width = bar.style.width;
-          bar.style.width = "0";
-          setTimeout(() => {
-            bar.style.width = width;
-          }, 100);
-        });
-      });
-    </script>
+    <script src="js/auth.js"></script>
+    <script src="js/portal.js"></script>
   </body>
 </html>
