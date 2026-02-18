@@ -1,3 +1,5 @@
+// portal.js
+
 // CRITICAL: Check authentication before displaying content
 authManager.requireAuth();
 authManager.checkSession();

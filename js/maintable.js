@@ -1,3 +1,5 @@
+// maintable.js
+
 authManager.requireAuth();
 authManager.checkSession();
 

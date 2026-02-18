@@ -1,3 +1,5 @@
+// auth.js
+
 const authManager = {
   TOKEN_KEY: 'auth_token',
   USER_KEY: 'auth_user',

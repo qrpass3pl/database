@@ -1,3 +1,5 @@
+// register.js
+
 const form = document.getElementById("signupForm");
 const firstNameInput = document.getElementById("firstName");
 const lastNameInput = document.getElementById("lastName");
