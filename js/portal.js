@@ -30,6 +30,16 @@ document.getElementById("logoutBtn").addEventListener("click", function () {
   }, 1000);
 });
 
+// Show success message
+function showMessage(msg, type = "success") {
+  const message = document.getElementById("successMessage");
+  message.textContent = msg;
+  message.className = `message show ${type}`;
+  setTimeout(() => {
+    message.classList.remove("show");
+  }, 3000);
+}
+
 // Add interactive card effects
 document.querySelectorAll(".card").forEach((card) => {
   card.addEventListener("click", function () {
@@ -50,3 +60,4 @@ window.addEventListener("load", () => {
     }, 100);
   });
 });
+
