@@ -114,6 +114,79 @@ function editHeader(th, idx) {
   };
 }
 
+// Delete column
+function deleteColumn(idx) {
+  if (confirm(`Delete column "${columns[idx]}"? This cannot be undone.`)) {
+    columns.splice(idx, 1);
+    tableData.forEach((row) => {
+      row.splice(idx, 1);
+    });
+    renderTable();
+    showMessage(`✅ Column deleted`, "success");
+  }
+}
+
+// Show context menu for column
+function showColumnContextMenu(event, idx) {
+  event.preventDefault();
+
+  // Remove existing context menu if any
+  const existingMenu = document.querySelector(".context-menu");
+  if (existingMenu) {
+    existingMenu.remove();
+  }
+
+  const menu = document.createElement("div");
+  menu.className = "context-menu";
+  menu.style.position = "fixed";
+  menu.style.top = event.clientY + "px";
+  menu.style.left = event.clientX + "px";
+  menu.style.backgroundColor = "white";
+  menu.style.border = "1px solid #ddd";
+  menu.style.borderRadius = "4px";
+  menu.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
+  menu.style.zIndex = "1000";
+  menu.style.minWidth = "180px";
+
+  const editOption = document.createElement("div");
+  editOption.textContent = "Edit Column Name";
+  editOption.style.padding = "10px 15px";
+  editOption.style.cursor = "pointer";
+  editOption.style.color = "#000000";
+  editOption.style.borderBottom = "1px solid #eee";
+  editOption.onmouseover = () => (editOption.style.backgroundColor = "#f5f5f5");
+  editOption.onmouseout = () => (editOption.style.backgroundColor = "white");
+  editOption.onclick = () => {
+    menu.remove();
+    const th = document.querySelectorAll("th")[idx];
+    editHeader(th, idx);
+  };
+  menu.appendChild(editOption);
+
+  const deleteOption = document.createElement("div");
+  deleteOption.textContent = "Delete Column";
+  deleteOption.style.padding = "10px 15px";
+  deleteOption.style.cursor = "pointer";
+  deleteOption.style.color = "#d32f2f";
+  deleteOption.onmouseover = () => (deleteOption.style.backgroundColor = "#ffebee");
+  deleteOption.onmouseout = () => (deleteOption.style.backgroundColor = "white");
+  deleteOption.onclick = () => {
+    menu.remove();
+    deleteColumn(idx);
+  };
+  menu.appendChild(deleteOption);
+
+  document.body.appendChild(menu);
+
+  // Close menu when clicking elsewhere
+  setTimeout(() => {
+    document.addEventListener("click", function closeMenu() {
+      menu.remove();
+      document.removeEventListener("click", closeMenu);
+    });
+  }, 0);
+}
+
 // Render table
 function renderTable() {
   const headerRow = document.getElementById("headerRow");
@@ -138,8 +211,9 @@ function renderTable() {
     const th = document.createElement("th");
     th.textContent = col;
     th.style.cursor = "pointer";
-    th.title = "Double-click to edit column name";
+    th.title = "Double-click to edit column name • Right-click for more options";
     th.ondblclick = () => editHeader(th, idx);
+    th.oncontextmenu = (event) => showColumnContextMenu(event, idx);
     headerRow.appendChild(th);
   });
   const th = document.createElement("th");
