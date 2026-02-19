@@ -21,7 +21,9 @@ setInterval(updateTime, 1000);
 
 // Logout button functionality
 document.getElementById("logoutBtn").addEventListener("click", function () {
+  // Clear session/storage through auth manager
   authManager.logout();
+  // Show logout message
   successMessage.classList.add("show");
   setTimeout(() => {
     window.location.href = "index.html";

@@ -23,7 +23,6 @@ setInterval(updateTime, 1000);
 document.getElementById("logoutBtn").addEventListener("click", function () {
   // Clear session/storage through auth manager
   authManager.logout();
-
   // Show logout message
   successMessage.classList.add("show");
   setTimeout(() => {
