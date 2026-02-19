@@ -4,22 +4,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Interactive Data Table</title>
+    <title>Data Sheets - Google Sheets Style Editor</title>
     <link rel="icon" href="icon/database-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Google+Sans:wght@500&display=swap"/>
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/header.css" />
+    <link rel="stylesheet" href="css/animation.css" />
     <link rel="stylesheet" href="css/maintable.css" />
   </head>
   <body>
     <div class="container">
+      <!-- Header -->
       <header>
         <div class="header-top">
           <div class="logo-section">
             <div class="logo"><img src="icon/database-icon.png" /></div>
-            <h1>Data Table Editor</h1>
+            <h1>Main Table</h1>
           </div>
-          <p class="header-subtitle">
-            Edit inline, import from Excel, and manage your data effortlessly
-          </p>
           <div class="left-side">
             <div class="time-display" id="timeDisplay">14:32:45</div>
             <button type="button" id="logoutBtn" class="logout-btn">
@@ -27,33 +30,47 @@
             </button>
           </div>
         </div>
-
-        <div class="stats" id="stats"></div>
       </header>
 
-      <div class="controls">
-        <button
-          class="btn btn-primary"
-          onclick="document.getElementById('fileInput').click()"
-        >
-          📥 Import Excel
-        </button>
-        <button class="btn btn-secondary" onclick="addRow()">➕ Add Row</button>
-        <button class="btn btn-secondary" onclick="downloadExcel()">
-          📤 Export Excel
-        </button>
-        <button class="btn btn-danger" onclick="clearData()">
-          🗑️ Clear All
-        </button>
+      <!-- Menu Bar -->
+      <div class="menu-bar">
+        <div class="menu-item">File</div>
+        <div class="menu-item">Edit</div>
+        <div class="menu-item">View</div>
+        <div class="menu-item">Insert</div>
+        <div class="menu-item">Format</div>
+        <div class="menu-item">Data</div>
+        <div class="menu-item">Tools</div>
       </div>
 
-      <input
-        type="file"
-        id="fileInput"
-        accept=".xlsx,.xls,.csv"
-        onchange="importExcel(event)"
-      />
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <button class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Import">
+            📥
+          </button>
+          <button class="icon-btn" onclick="downloadExcel()" title="Export">
+            📤
+          </button>
+          <button class="icon-btn" onclick="addRow()" title="Add row">
+            ➕
+          </button>
+          <button class="icon-btn" onclick="addCol()" title="Add column">
+            ➕
+          </button>
+        </div>
+        <div class="toolbar-group">
+          <button class="icon-btn" title="Undo">↶</button>
+          <button class="icon-btn" title="Redo">↷</button>
+        </div>
+        <div class="toolbar-group">
+          <button class="text-btn danger" onclick="clearData()">
+            🗑️ Clear All
+          </button>
+        </div>
+      </div>
 
+      <!-- Table -->
       <div class="table-container">
         <div class="table-wrapper">
           <table id="dataTable">
@@ -64,17 +81,36 @@
           </table>
         </div>
         <div id="emptyState" class="empty-state">
-          <p>
-            📂 No data yet. Import an Excel file or add a new row to get
-            started!
+          <p>📂 No data yet</p>
+          <p style="font-size: 14px; color: #9aa0a6">
+            Import an Excel file or click the + button to get started
           </p>
+        </div>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="stats-bar" id="stats">
+        <div class="stat-item">
+          <span class="stat-label">Rows:</span>
+          <span class="stat-value" id="rowCount">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Columns:</span>
+          <span class="stat-value" id="colCount">0</span>
         </div>
       </div>
     </div>
 
     <div class="message" id="successMessage">
-      Logout successful! Loading...
+      Logout successful! Redirecting...
     </div>
+
+    <input
+      type="file"
+      id="fileInput"
+      accept=".xlsx,.xls,.csv"
+      onchange="importExcel(event)"
+    />
 
     <script src="js/auth.js"></script>
     <script src="js/maintable.js"></script>
