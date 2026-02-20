@@ -1,4 +1,4 @@
-// register.js
+// register.js - Registration Form Handler (Updated for async auth.js integration)
 
 const form = document.getElementById("signupForm");
 const firstNameInput = document.getElementById("firstName");
@@ -80,12 +80,18 @@ termsCheckbox.addEventListener("change", () => {
 
 // ── Form submission ────────────────────────────────────────────────────────────
 
-form.addEventListener("submit", (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   // Reset all error states
-  [firstNameError, lastNameError, emailError, passwordError, confirmPasswordError, termsError]
-    .forEach((el) => el.classList.remove("show"));
+  [
+    firstNameError,
+    lastNameError,
+    emailError,
+    passwordError,
+    confirmPasswordError,
+    termsError,
+  ].forEach((el) => el.classList.remove("show"));
   [firstNameInput, lastNameInput, emailInput, passwordInput, confirmPasswordInput]
     .forEach((el) => el.classList.remove("error"));
 
@@ -153,31 +159,42 @@ form.addEventListener("submit", (e) => {
   submitBtn.disabled = true;
   submitBtn.textContent = "Creating Account...";
 
-  // Check for duplicate email BEFORE the fake delay so feedback is instant
-  const result = authManager.registerUser({
-    firstName: firstNameInput.value.trim(),
-    lastName: lastNameInput.value.trim(),
-    email: emailInput.value.trim(),
-    password: passwordInput.value,
-  });
+  try {
+    // Call auth.js registerUser (now properly awaited)
+    const result = await authManager.registerUser({
+      firstName: firstNameInput.value.trim(),
+      lastName: lastNameInput.value.trim(),
+      email: emailInput.value.trim(),
+      password: passwordInput.value,
+      phone_number: "", // Optional: add phone input if needed
+    });
 
-  if (!result.success) {
-    // Duplicate email — surface the error on the email field
-    emailError.textContent = result.message;
+    if (!result.success) {
+      // Surface the error on the email field (likely duplicate email)
+      emailError.textContent =
+        result.message || "Registration failed. Please try again.";
+      emailError.classList.add("show");
+      emailInput.classList.add("error");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Create Account";
+      return;
+    }
+
+    // ── Success ────────────────────────────────────────────────────────────────
+    // Show success message briefly, then redirect to login
+    successMessage.classList.add("show");
+    setTimeout(() => {
+      window.location.href = "index.html"; // redirect to login page
+    }, 1500);
+  } catch (error) {
+    console.error("Registration error:", error);
+    emailError.textContent =
+      "An unexpected error occurred. Please try again.";
     emailError.classList.add("show");
     emailInput.classList.add("error");
     submitBtn.disabled = false;
     submitBtn.textContent = "Create Account";
-    return;
   }
-
-  // Simulate network latency, then redirect
-  setTimeout(() => {
-    successMessage.classList.add("show");
-    setTimeout(() => {
-      window.location.href = "index.html"; // go to login page
-    }, 1500);
-  }, 1000);
 });
 
 // ── Social sign-up (placeholder) ─────────────────────────────────────────────

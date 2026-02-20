@@ -1,4 +1,4 @@
-// login.js
+// login.js - Login Form Handler (Updated for async auth.js integration)
 
 const form = document.getElementById("loginForm");
 const emailInput = document.getElementById("email");
@@ -34,7 +34,7 @@ passwordInput.addEventListener("input", () => {
 
 // ── Form submission ────────────────────────────────────────────────────────────
 
-form.addEventListener("submit", (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   // Reset errors
@@ -71,14 +71,17 @@ form.addEventListener("submit", (e) => {
   submitBtn.disabled = true;
   submitBtn.textContent = "Signing in...";
 
-  // Simulate a short network delay
-  setTimeout(() => {
-    const result = authManager.login(emailInput.value.trim(), passwordInput.value);
+  try {
+    // Call auth.js login (now properly awaited)
+    const result = await authManager.login(
+      emailInput.value.trim(),
+      passwordInput.value
+    );
 
     if (!result.success) {
-      // Show a single generic error on the password field so we don't
-      // leak whether the email exists or not
-      passwordError.textContent = result.message; // "Invalid email or password."
+      // Show error on password field (generic message to avoid leaking info)
+      passwordError.textContent =
+        result.message || "Invalid email or password.";
       passwordError.classList.add("show");
       passwordInput.classList.add("error");
       passwordInput.value = ""; // clear password field on failure
@@ -87,14 +90,26 @@ form.addEventListener("submit", (e) => {
       return;
     }
 
-    // ── Success ──────────────────────────────────────────────────────────────
+    // ── Success ────────────────────────────────────────────────────────────────
+    // Update auth state with "remember me" preference
     authManager.setAuth(result.user, rememberInput.checked);
+    
+    // Show success feedback
     successMessage.classList.add("show");
 
+    // Redirect to portal after brief success message
     setTimeout(() => {
       window.location.href = "portal.html";
     }, 1000);
-  }, 800);
+  } catch (error) {
+    console.error("Login error:", error);
+    passwordError.textContent =
+      "An unexpected error occurred. Please try again.";
+    passwordError.classList.add("show");
+    passwordInput.classList.add("error");
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Sign In";
+  }
 });
 
 // ── Social login (placeholder) ────────────────────────────────────────────────
