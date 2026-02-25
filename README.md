@@ -1,443 +1,395 @@
-# Authentication System Setup Guide
+# Authentication Setup Guide
 
-## Overview
+Complete integration guide for connecting your login.js, register.js with Firebase through auth.js and server.js.
 
-This is a complete authentication system that connects a frontend JavaScript auth manager to a MySQL database via a Node.js/Express backend server.
-
-### Architecture
+## Project Structure
 
 ```
-Frontend (HTML/JS)
-    ↓
-auth-updated.js (API calls)
-    ↓
-Express Backend (server.js)
-    ↓
-MySQL Database (users_db)
+project-root/
+├── public/
+│   ├── index.html (login page)
+│   ├── register.html (registration page)
+│   ├── portal.html (dashboard after login)
+│   ├── login.js
+│   ├── register.js
+│   └── firebaseConfig.js
+├── src/
+│   ├── auth.js (Client-side auth manager)
+│   └── firebaseConfig.js
+├── server.js (Backend Express server)
+├── .env (Environment variables - create from .env.example)
+├── .env.example
+├── package.json
+└── README.md
 ```
-
----
-
-## Prerequisites
-
-- **Node.js** (v14 or higher)
-- **MySQL** (v5.7 or higher)
-- **npm** (comes with Node.js)
-
----
 
 ## Installation Steps
 
-### 1. Set Up MySQL Database
-
-Run the provided SQL script to create the database and table:
-
-```sql
-CREATE DATABASE IF NOT EXISTS users_db;
-USE users_db;
-
-CREATE TABLE registered_users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    firstname VARCHAR(100) NOT NULL,
-    lastname VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    phone_number VARCHAR(20),
-    time_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    time_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    ip_address VARCHAR(45),
-    session_token VARCHAR(255) UNIQUE,
-    INDEX idx_email (email),
-    INDEX idx_session_token (session_token),
-    INDEX idx_time_created (time_created)
-);
-```
-
-### 2. Install Node.js Dependencies
+### 1. Install Dependencies
 
 ```bash
-npm install
+npm install express cors dotenv firebase-admin
+npm install -D nodemon
 ```
 
-This installs:
-- `express` - Web server framework
-- `mysql2` - MySQL driver with promise support
-- `bcryptjs` - Password hashing (optional for production)
-- `cors` - Cross-origin resource sharing
-- `dotenv` - Environment variable management
+### 2. Set Up Firebase
+
+#### A. Create Firebase Project
+1. Go to [Firebase Console](https://console.firebase.google.com)
+2. Create a new project
+3. Enable Authentication (Email/Password)
+4. Create a Realtime Database
+
+#### B. Get Service Account Key
+1. Go to Project Settings → Service Accounts
+2. Click "Generate New Private Key"
+3. Save the JSON file securely
+
+#### C. Update firebaseConfig.js
+Your existing `firebaseConfig.js` should have:
+```javascript
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "your-project-id.firebaseapp.com",
+  databaseURL: "https://your-project-id-default-rtdb.firebaseio.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project-id.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_ID",
+  appId: "YOUR_APP_ID"
+};
+```
 
 ### 3. Configure Environment Variables
 
-Copy `.env.example` to `.env` and update with your database credentials:
+1. Copy `.env.example` to `.env`
+2. Fill in your Firebase credentials:
+   - `FIREBASE_DATABASE_URL` - from Firebase Console
+   - `FIREBASE_SERVICE_ACCOUNT_KEY` - from the JSON file you downloaded
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env`:
+3. Edit `.env` with your credentials:
 ```
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_password
-DB_NAME=users_db
-PORT=3000
-API_URL=http://localhost:3000/api/auth
+PORT=5000
+NODE_ENV=development
+FIREBASE_DATABASE_URL=https://your-project-id-default-rtdb.firebaseio.com
+FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account",...}'
 ```
 
-### 4. Start the Backend Server
+### 4. Update package.json
 
-```bash
-npm start
-```
+Add these scripts to your `package.json`:
 
-Or for development with auto-restart:
-```bash
-npm run dev
-```
-
-Server will run on `http://localhost:3000`
-
-### 5. Use in Frontend
-
-Include the updated `auth-updated.js` in your HTML:
-
-```html
-<script src="auth-updated.js"></script>
-<script>
-  // Register a user
-  const registerResult = await authManager.registerUser({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john@example.com',
-    password: 'securePassword123',
-    phone_number: '+1-555-0123'
-  });
-
-  // Login
-  const loginResult = await authManager.login('john@example.com', 'securePassword123');
-
-  // Check if user is logged in
-  if (authManager.isAuthenticated()) {
-    const user = authManager.getCurrentUser();
-    console.log(`Welcome, ${user.firstName}!`);
-  }
-
-  // Logout
-  await authManager.logout();
-</script>
-```
-
----
-
-## API Endpoints
-
-### POST /api/auth/register
-
-Register a new user.
-
-**Request:**
 ```json
+{
+  "name": "auth-app",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "firebase": "^9.20.0",
+    "firebase-admin": "^11.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
+```
+
+## File Integration
+
+### auth.js (Client-Side Authentication Manager)
+
+This file provides the `authManager` object used by `login.js` and `register.js`.
+
+**Key Methods:**
+- `authManager.registerUser(userData)` - Register new user
+- `authManager.login(email, password, rememberMe)` - Login user
+- `authManager.logout()` - Logout user
+- `authManager.isAuthenticated()` - Check auth status
+- `authManager.getCurrentUser()` - Get current user
+- `authManager.getUserProfile(userId)` - Fetch user profile
+- `authManager.updateUserProfile(userId, updates)` - Update profile
+
+**Usage in register.js:**
+```javascript
+// Already implemented - calls authManager.registerUser()
+const result = await authManager.registerUser({
+  firstName: firstNameInput.value.trim(),
+  lastName: lastNameInput.value.trim(),
+  email: emailInput.value.trim(),
+  password: passwordInput.value,
+  phone_number: "",
+});
+
+if (!result.success) {
+  emailError.textContent = result.message;
+  emailError.classList.add("show");
+  return;
+}
+
+// Redirect to login on success
+window.location.href = "index.html";
+```
+
+**Usage in login.js:**
+```javascript
+// Already implemented - calls authManager.login()
+const result = await authManager.login(
+  emailInput.value.trim(),
+  passwordInput.value
+);
+
+if (!result.success) {
+  passwordError.textContent = result.message;
+  passwordError.classList.add("show");
+  return;
+}
+
+// Store auth state and redirect
+authManager.setAuth(result.user, rememberInput.checked);
+window.location.href = "portal.html";
+```
+
+### server.js (Backend Express Server)
+
+Provides API endpoints for authentication and user management.
+
+**API Endpoints:**
+
+#### POST /api/auth/register
+Register a new user
+```javascript
+// Request
 {
   "firstName": "John",
   "lastName": "Doe",
   "email": "john@example.com",
-  "password": "securePassword123",
-  "phone_number": "+1-555-0123"
+  "password": "SecurePass123!",
+  "phone_number": "555-1234"
 }
-```
 
-**Response:**
-```json
+// Response
 {
   "success": true,
-  "message": "Account created successfully!",
-  "userId": 1
-}
-```
-
----
-
-### POST /api/auth/login
-
-Authenticate a user and return a session token.
-
-**Request:**
-```json
-{
-  "email": "john@example.com",
-  "password": "securePassword123"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Login successful!",
-  "user": {
-    "id": 1,
-    "firstName": "John",
-    "lastName": "Doe",
-    "email": "john@example.com",
-    "sessionToken": "a1b2c3d4e5f6..."
-  }
-}
-```
-
----
-
-### POST /api/auth/validate-session
-
-Validate an existing session token.
-
-**Request:**
-```json
-{
-  "sessionToken": "a1b2c3d4e5f6..."
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Session valid",
-  "user": {
-    "id": 1,
-    "firstName": "John",
-    "lastName": "Doe",
+  "message": "Account created successfully",
+  "data": {
+    "uid": "user-id",
     "email": "john@example.com"
   }
 }
 ```
 
----
-
-### POST /api/auth/logout
-
-Invalidate a session token.
-
-**Request:**
-```json
+#### POST /api/auth/login
+Login user
+```javascript
+// Request
 {
-  "sessionToken": "a1b2c3d4e5f6..."
+  "email": "john@example.com",
+  "password": "SecurePass123!"
 }
-```
 
-**Response:**
-```json
+// Response
 {
   "success": true,
-  "message": "Logged out successfully"
+  "message": "Login successful",
+  "data": {
+    "uid": "user-id",
+    "email": "john@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "customToken": "eyJhbGc..."
+  }
 }
 ```
 
----
-
-## Frontend API Methods
-
-### Register User
-
+#### GET /api/users/:userId
+Get user profile
 ```javascript
-const result = await authManager.registerUser({
-  firstName: 'Jane',
-  lastName: 'Smith',
-  email: 'jane@example.com',
-  password: 'password123',
-  phone_number: '+1-555-9876'
-});
-
-if (result.success) {
-  console.log('User created:', result.userId);
-} else {
-  console.log('Error:', result.message);
+// Response
+{
+  "success": true,
+  "message": "User profile fetched",
+  "data": {
+    "uid": "user-id",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "phone_number": "555-1234",
+    "createdAt": "2024-01-15T10:30:00.000Z"
+  }
 }
 ```
 
-### Login
-
+#### PUT /api/users/:userId
+Update user profile
 ```javascript
-const result = await authManager.login('jane@example.com', 'password123');
+// Request
+{
+  "firstName": "Jane",
+  "phone_number": "555-5678"
+}
 
-if (result.success) {
-  authManager.setAuth(result.user, true); // true = remember me
-  console.log('Logged in:', result.user.firstName);
+// Response (returns updated profile)
+```
+
+#### POST /api/auth/reset-password
+Send password reset email
+```javascript
+// Request
+{
+  "email": "john@example.com"
+}
+
+// Response
+{
+  "success": true,
+  "message": "Password reset email would be sent"
 }
 ```
 
-### Check Authentication
+## Running the Application
 
-```javascript
-if (authManager.isAuthenticated()) {
-  const user = authManager.getCurrentUser();
-  console.log('Current user:', user);
-}
+### Development Mode
+
+```bash
+npm run dev
 ```
 
-### Protect Routes
+Server will start on `http://localhost:5000`
 
-```javascript
-// Call at the top of protected pages
-authManager.requireAuth('login.html');
+### Production Mode
+
+```bash
+npm start
 ```
 
-### Session Management
+## HTML Integration
 
-```javascript
-// Start session monitoring (auto-logout after 30 mins of inactivity)
-authManager.checkSession('login.html');
+Your HTML files should include:
 
-// Logout
-await authManager.logout();
+### register.html
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <form id="signupForm">
+    <!-- Form fields -->
+  </form>
+  
+  <script type="module" src="firebaseConfig.js"></script>
+  <script type="module" src="auth.js"></script>
+  <script type="module" src="register.js"></script>
+</body>
+</html>
 ```
 
-### Validate Session
-
-```javascript
-const result = await authManager.validateSession();
-if (result.success) {
-  console.log('Session is valid');
-} else {
-  console.log('Session expired or invalid');
-}
+### login.html (index.html)
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <form id="loginForm">
+    <!-- Form fields -->
+  </form>
+  
+  <script type="module" src="firebaseConfig.js"></script>
+  <script type="module" src="auth.js"></script>
+  <script type="module" src="login.js"></script>
+</body>
+</html>
 ```
 
----
+## Firebase Database Structure
 
-## Security Considerations
+Users data is stored in the following structure:
 
-### Production Recommendations
+```
+users/
+├── {uid}/
+│   ├── uid: "user-id"
+│   ├── firstName: "John"
+│   ├── lastName: "Doe"
+│   ├── email: "john@example.com"
+│   ├── phone_number: "555-1234"
+│   ├── createdAt: "2024-01-15T10:30:00.000Z"
+│   ├── updatedAt: "2024-01-16T15:45:00.000Z"
+│   └── emailVerified: false
+```
 
-1. **Hash Passwords**: Use bcrypt for password hashing (already imported in server.js)
-   ```javascript
-   const hashedPassword = await bcrypt.hash(password, 10);
-   ```
+## Security Notes
 
-2. **HTTPS Only**: Always use HTTPS in production
-   ```javascript
-   const API_URL = 'https://api.example.com/api/auth';
-   ```
-
-3. **Use HttpOnly Cookies**: Store tokens in httpOnly cookies instead of sessionStorage
-   ```javascript
-   // Backend should set cookie:
-   res.cookie('sessionToken', token, {
-     httpOnly: true,
-     secure: true,
-     sameSite: 'strict'
-   });
-   ```
-
-4. **Add Rate Limiting**: Prevent brute force attacks
-   ```javascript
-   npm install express-rate-limit
-   ```
-
-5. **CORS Configuration**: Restrict to your domain
-   ```javascript
-   app.use(cors({
-     origin: 'https://yourdomain.com',
-     credentials: true
-   }));
-   ```
-
-6. **Input Validation**: Validate and sanitize all inputs
-   ```javascript
-   npm install joi  // Schema validation
-   ```
-
-7. **JWT Tokens**: Use JSON Web Tokens for stateless sessions
-   ```javascript
-   npm install jsonwebtoken
-   ```
-
-8. **Environment Variables**: Never commit `.env` to version control
-   ```bash
-   echo ".env" >> .gitignore
-   ```
-
----
+1. **API Key in Frontend**: Your Firebase API key is public - this is intentional and secure
+2. **Service Account**: Keep `.env` file secure and never commit to version control
+3. **Password Validation**: Both client and server validate passwords
+4. **Email Verification**: Consider implementing email verification before allowing login
+5. **HTTPS**: Always use HTTPS in production
+6. **CORS**: Configure CORS properly in production (update `server.js`)
 
 ## Troubleshooting
 
-### Connection Refused
+### "User not found" Error
+- Ensure Firebase Authentication is enabled in your project
+- Check that the user was created successfully in Firebase Console
 
-**Error**: "ECONNREFUSED" when connecting to MySQL
+### "Email already in use" Error
+- The email is already registered
+- User can use the password reset feature if they forgot their password
 
-**Solution**: 
-- Verify MySQL is running: `mysql -u root -p`
-- Check host and credentials in `.env`
-- Ensure DB_HOST is correct (127.0.0.1 for local)
+### Firebase Config Issues
+- Verify all credentials in `firebaseConfig.js` match your Firebase project
+- Check that Realtime Database is enabled
 
-### CORS Errors
+### Server Connection Issues
+- Ensure server is running (`npm run dev`)
+- Check that port 5000 is not in use
+- Verify CORS is enabled for your frontend URL
 
-**Error**: "CORS policy: No 'Access-Control-Allow-Origin' header"
-
-**Solution**:
-- Ensure CORS is enabled in server.js
-- Check that `API_URL` in auth-updated.js matches the backend URL
-- Update CORS origin if hosting on different domain
-
-### Session Token Not Working
-
-**Error**: "Invalid or expired session"
-
-**Solution**:
-- Check that token is being stored in sessionStorage/localStorage
-- Verify session token matches database entry
-- Ensure session timeout hasn't been exceeded (30 minutes default)
-
-### Database Not Saving Data
-
-**Error**: "Database error during registration"
-
-**Solution**:
-- Verify email doesn't already exist (UNIQUE constraint)
-- Check all required fields are provided
-- Ensure database connection is working
-
----
-
-## File Structure
-
-```
-.
-├── server.js              # Express backend server
-├── auth-updated.js        # Frontend API manager
-├── example.html           # Demo HTML page
-├── package.json           # Node.js dependencies
-├── .env                   # Environment configuration (create from .env.example)
-├── .env.example           # Template for .env
-└── README.md             # This file
+### Database Permission Issues
+In Firebase Console, set these rules for development:
+```json
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    }
+  }
+}
 ```
 
----
+## Next Steps
 
-## Testing
+1. **Email Verification**: Add email verification before allowing login
+2. **Password Reset**: Implement sendgrid to send password reset emails
+3. **Social Login**: Add GitHub/Google authentication
+4. **Token Refresh**: Implement automatic token refresh
+5. **Session Management**: Add session timeout and refresh logic
+6. **User Dashboard**: Create portal.html with user profile management
 
-Use a tool like **Postman** or **curl** to test API endpoints:
+## Support
 
-```bash
-# Test registration
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "firstName": "Test",
-    "lastName": "User",
-    "email": "test@example.com",
-    "password": "test123"
-  }'
-
-# Test login
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "password": "test123"
-  }'
-```
-
----
-
-## License
-
-MIT License - Feel free to use for your projects!
+For Firebase issues, visit: https://firebase.google.com/docs
+For Express issues, visit: https://expressjs.com/en/api.html

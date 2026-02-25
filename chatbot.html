@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeMentor AI - Programming Learning Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to bottom right, #0f172a, #581c87, #0f172a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            min-height: 100vh;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 900px;
+            width: 100%;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(88, 28, 135, 0.3) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(90deg, #a855f7 0%, #6d28d9 100%);
+            padding: 24px;
+            text-align: center;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            font-size: 28px;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 8px;
+        }
+
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            animation: slideIn 0.3s ease-out;
+            word-wrap: break-word;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message.bot .message-bubble {
+            background: rgba(88, 28, 135, 0.4);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            color: rgba(255, 255, 255, 0.95);
+            border-radius: 16px 16px 16px 4px;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+            color: white;
+            border-radius: 16px 16px 4px 16px;
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+        }
+
+        .input-area {
+            padding: 20px 24px;
+            border-top: 1px solid rgba(168, 85, 247, 0.2);
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        .input-form {
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 14px;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: rgba(168, 85, 247, 0.6);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .send-btn, .reset-btn, .profile-btn {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+            color: white;
+            min-width: 100px;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(168, 85, 247, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .reset-btn {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .reset-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .profile-btn {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .profile-btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 8px;
+            padding: 0 24px 16px;
+            justify-content: center;
+        }
+
+        .profile-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .profile-modal.active {
+            display: flex;
+        }
+
+        .profile-content {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(88, 28, 135, 0.4) 100%);
+            padding: 32px;
+            border-radius: 20px;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            max-width: 400px;
+            color: white;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .profile-section {
+            margin-bottom: 24px;
+        }
+
+        .profile-section h3 {
+            color: #a855f7;
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .profile-item {
+            padding: 8px 12px;
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .loading-dots {
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #a855f7;
+            animation: bounce 1.4s infinite;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { opacity: 0.3; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-8px); }
+        }
+
+        .messages-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages-area::-webkit-scrollbar-track {
+            background: rgba(168, 85, 247, 0.1);
+            border-radius: 10px;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb {
+            background: rgba(168, 85, 247, 0.3);
+            border-radius: 10px;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb:hover {
+            background: rgba(168, 85, 247, 0.5);
+        }
+
+        .profile-section:last-child {
+            margin-bottom: 0;
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        .profile-info {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin: 0;
+        }
+
+        .profile-info strong {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .message-bubble {
+                max-width: 90%;
+            }
+
+            .header-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1 class="header-title">
+                <span class="header-icon">⚡</span>
+                CodeMentor AI
+            </h1>
+            <p class="header-subtitle">Adaptive programming learning assistant</p>
+        </div>
+
+        <div class="messages-area" id="messagesArea">
+            <!-- Messages will be inserted here -->
+        </div>
+
+        <div class="control-buttons">
+            <button class="profile-btn" id="profileBtn">
+                <span>📖</span>
+                Your Profile
+            </button>
+            <button class="reset-btn" id="resetBtn">
+                <span>🔄</span>
+                Reset
+            </button>
+        </div>
+
+        <div class="input-area">
+            <form class="input-form" id="inputForm">
+                <input
+                    type="text"
+                    class="input-field"
+                    id="inputField"
+                    placeholder="Ask anything about programming..."
+                    autocomplete="off"
+                />
+                <button type="submit" class="send-btn" id="sendBtn">
+                    <span>📤</span>
+                    Send
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="profile-modal" id="profileModal">
+        <div class="profile-content" id="profileContent">
+            <h2 style="margin: 0 0 24px 0; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">💻</span>
+                Your Learning Profile
+            </h2>
+
+            <div class="profile-section">
+                <h3>Experience Level</h3>
+                <div class="profile-item" id="experienceItem">Not yet detected</div>
+            </div>
+
+            <div class="profile-section">
+                <h3>Languages</h3>
+                <div id="languagesContainer">
+                    <div class="profile-item">Not yet detected</div>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h3>Learning Style</h3>
+                <div class="profile-item" id="learningStyleItem">Not yet detected</div>
+            </div>
+
+            <div class="profile-section">
+                <h3>Interests</h3>
+                <div id="interestsContainer">
+                    <div class="profile-item">Not yet detected</div>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <p class="profile-info">
+                    💡 <strong>How it works:</strong> The more you chat, the better I understand your needs. Tell me about your experience, interests, and learning preferences for personalized help!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let messages = [
+            {
+                id: 1,
+                text: "Hi! 👋 I'm your programming learning companion. I'll adapt to your level and style. What's your current programming experience?",
+                sender: 'bot',
+                timestamp: new Date()
+            }
+        ];
+
+        let userProfile = {
+            experience: null,
+            languages: [],
+            learningStyle: null,
+            interests: [],
+            conversationCount: 0
+        };
+
+        let isLoading = false;
+        let messageId = 2;
+
+        // DOM elements
+        const messagesArea = document.getElementById('messagesArea');
+        const inputField = document.getElementById('inputField');
+        const inputForm = document.getElementById('inputForm');
+        const sendBtn = document.getElementById('sendBtn');
+        const profileBtn = document.getElementById('profileBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const profileModal = document.getElementById('profileModal');
+        const profileContent = document.getElementById('profileContent');
+
+        // Initialize
+        renderMessages();
+
+        // Event listeners
+        inputForm.addEventListener('submit', handleSendMessage);
+        profileBtn.addEventListener('click', () => toggleProfileModal(true));
+        resetBtn.addEventListener('click', resetProfile);
+        profileModal.addEventListener('click', (e) => {
+            if (e.target === profileModal) toggleProfileModal(false);
+        });
+
+        function renderMessages() {
+            messagesArea.innerHTML = '';
+            messages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${msg.sender}`;
+                
+                const bubble = document.createElement('div');
+                bubble.className = 'message-bubble';
+                bubble.textContent = msg.text;
+                
+                messageDiv.appendChild(bubble);
+                messagesArea.appendChild(messageDiv);
+            });
+            
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            setTimeout(() => {
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+            }, 0);
+        }
+
+        function extractUserProfile(text) {
+            const lowerText = text.toLowerCase();
+            let updated = false;
+
+            // Detect experience level
+            if (!userProfile.experience) {
+                if (/beginner|start|new|learning|never|first/.test(lowerText)) {
+                    userProfile.experience = 'beginner';
+                    updated = true;
+                } else if (/intermediate|few years|some experience|decent|know/.test(lowerText)) {
+                    userProfile.experience = 'intermediate';
+                    updated = true;
+                } else if (/advanced|expert|senior|years of|professional|deep/.test(lowerText)) {
+                    userProfile.experience = 'advanced';
+                    updated = true;
+                }
+            }
+
+            // Detect programming languages
+            const languages = ['javascript', 'python', 'java', 'c\\+\\+', 'cpp', 'csharp', 'c#', 'go', 'rust', 'php', 'ruby', 'swift', 'kotlin', 'typescript', 'scala'];
+            languages.forEach(lang => {
+                if (lowerText.includes(lang) && !userProfile.languages.includes(lang.replace(/\\/g, ''))) {
+                    userProfile.languages.push(lang.replace(/\\/g, ''));
+                    updated = true;
+                }
+            });
+
+            // Detect learning style
+            if (!userProfile.learningStyle) {
+                if (/show|diagram|visual|picture|example/.test(lowerText)) {
+                    userProfile.learningStyle = 'visual';
+                    updated = true;
+                } else if (/code|build|project|hands-on|create/.test(lowerText)) {
+                    userProfile.learningStyle = 'hands-on';
+                    updated = true;
+                } else if (/explain|why|concept|theory|understand/.test(lowerText)) {
+                    userProfile.learningStyle = 'theoretical';
+                    updated = true;
+                }
+            }
+
+            // Detect interests
+            const interests = ['web', 'mobile', 'game', 'data', 'ai', 'ml', 'backend', 'frontend', 'devops', 'security', 'database', 'api'];
+            interests.forEach(interest => {
+                if (lowerText.includes(interest) && !userProfile.interests.includes(interest)) {
+                    userProfile.interests.push(interest);
+                    updated = true;
+                }
+            });
+
+            if (updated) {
+                updateProfileUI();
+            }
+
+            return updated;
+        }
+
+        async function generateBotResponse(text) {
+            // Simulate API call delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            let response = '';
+            const lowerText = text.toLowerCase();
+
+            // Personalized response based on profile
+            if (!userProfile.experience) {
+                if (/beginner|start|new|hello|hi/i.test(lowerText)) {
+                    response = "Great! Welcome to your learning journey! 🚀\n\nI'll tailor everything to your pace:\n• I'll use simple explanations without jargon\n• I'll provide lots of hands-on examples\n• I'll break concepts into small, digestible chunks\n\nWhat programming language would you like to start with? (Python, JavaScript, Java, etc.)";
+                } else {
+                    response = "Awesome! As a beginner, I'll make sure to explain things clearly without overwhelming you. What specific area interests you? Web development, data science, game development, or something else?";
+                }
+            } else if (userProfile.experience === 'beginner') {
+                if (/help|stuck|error|problem|debug/.test(lowerText)) {
+                    response = "No problem! Let's break it down step by step. Can you:\n1. Share the error message you're seeing\n2. Show me the code snippet that's causing issues\n3. Tell me what you expected to happen\n\nI'll help you understand what went wrong and how to fix it! 💡";
+                } else if (/how|what|why|explain/.test(lowerText)) {
+                    response = `I see you want to understand the concepts better. Since you're ${userProfile.experience}, I'll explain this in simple terms with examples.\n\nWhat would you like me to explain?`;
+                } else {
+                    response = "Got it! Here's a beginner-friendly approach:\n\n1. Start with the basics\n2. Practice with small examples\n3. Build a small project\n4. Debug and learn\n\nI'm here to guide you through each step. What would you like to tackle first?";
+                }
+            } else if (userProfile.experience === 'intermediate') {
+                response = "Nice! With your intermediate level, I can dive deeper into best practices and architectural patterns.\n\nI can help with:\n• Design patterns and architecture\n• Performance optimization\n• Testing and debugging\n• Industry best practices\n\nWhat's on your mind? 🎯";
+            } else if (userProfile.experience === 'advanced') {
+                response = "Excellent! Let's discuss advanced topics:\n\nI can help with:\n• System design and architecture\n• Performance optimization at scale\n• Advanced debugging techniques\n• Emerging technologies\n• Code review and mentoring\n\nWhat challenge are you working on? 🔥";
+            }
+
+            // Mention detected interests
+            if (userProfile.interests.length > 0) {
+                response += `\n\n✨ I noticed you're interested in: ${userProfile.interests.join(', ')}. I'll keep this in mind!`;
+            }
+
+            if (userProfile.languages.length > 0) {
+                response += `\n📚 Using: ${userProfile.languages.join(', ')}`;
+            }
+
+            return response;
+        }
+
+        async function handleSendMessage(e) {
+            e.preventDefault();
+            if (!inputField.value.trim() || isLoading) return;
+
+            isLoading = true;
+            sendBtn.disabled = true;
+            inputField.disabled = true;
+
+            // Add user message
+            const userMessage = {
+                id: messageId++,
+                text: inputField.value,
+                sender: 'user',
+                timestamp: new Date()
+            };
+            messages.push(userMessage);
+            renderMessages();
+
+            const userText = inputField.value;
+            inputField.value = '';
+
+            // Extract profile and generate response
+            extractUserProfile(userText);
+            
+            // Show loading indicator
+            const loadingMessage = {
+                id: messageId++,
+                text: '...',
+                sender: 'bot',
+                timestamp: new Date(),
+                isLoading: true
+            };
+            messages.push(loadingMessage);
+            renderMessages();
+
+            const botResponse = await generateBotResponse(userText);
+
+            // Remove loading message and add actual response
+            messages = messages.filter(msg => !msg.isLoading);
+            const botMessage = {
+                id: messageId++,
+                text: botResponse,
+                sender: 'bot',
+                timestamp: new Date()
+            };
+            messages.push(botMessage);
+
+            renderMessages();
+            isLoading = false;
+            sendBtn.disabled = false;
+            inputField.disabled = false;
+            inputField.focus();
+        }
+
+        function updateProfileUI() {
+            // Experience
+            const experienceItem = document.getElementById('experienceItem');
+            experienceItem.textContent = userProfile.experience ? 
+                userProfile.experience.charAt(0).toUpperCase() + userProfile.experience.slice(1) : 
+                'Not yet detected';
+
+            // Languages
+            const languagesContainer = document.getElementById('languagesContainer');
+            if (userProfile.languages.length > 0) {
+                languagesContainer.innerHTML = userProfile.languages
+                    .map(lang => `<div class="profile-item">${lang.toUpperCase()}</div>`)
+                    .join('');
+            } else {
+                languagesContainer.innerHTML = '<div class="profile-item">Not yet detected</div>';
+            }
+
+            // Learning Style
+            const learningStyleItem = document.getElementById('learningStyleItem');
+            learningStyleItem.textContent = userProfile.learningStyle ? 
+                userProfile.learningStyle.charAt(0).toUpperCase() + userProfile.learningStyle.slice(1) : 
+                'Not yet detected';
+
+            // Interests
+            const interestsContainer = document.getElementById('interestsContainer');
+            if (userProfile.interests.length > 0) {
+                interestsContainer.innerHTML = userProfile.interests
+                    .map(interest => `<div class="profile-item">${interest.toUpperCase()}</div>`)
+                    .join('');
+            } else {
+                interestsContainer.innerHTML = '<div class="profile-item">Not yet detected</div>';
+            }
+        }
+
+        function resetProfile() {
+            userProfile = {
+                experience: null,
+                languages: [],
+                learningStyle: null,
+                interests: [],
+                conversationCount: 0
+            };
+            messages = [{
+                id: 1,
+                text: "Hi! 👋 I'm your programming learning companion. I'll adapt to your level and style. What's your current programming experience?",
+                sender: 'bot',
+                timestamp: new Date()
+            }];
+            messageId = 2;
+            renderMessages();
+            updateProfileUI();
+        }
+
+        function toggleProfileModal(show) {
+            if (show) {
+                profileModal.classList.add('active');
+                updateProfileUI();
+            } else {
+                profileModal.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
